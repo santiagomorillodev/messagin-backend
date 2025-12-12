@@ -62,12 +62,13 @@ def login(data:OAuth2PasswordRequestForm = Depends(), db:Session = Depends(get_d
         response.set_cookie(
             key='access_token',
             value=token,
-            httponly=False,
-            samesite='lax',
-            secure=False,
+            httponly=True,
+            samesite='none',
+            secure=True,
             max_age=1800,
             expires=1800
         )
+
         db.query(UserModel).filter(UserModel.id == user_db.id).update({UserModel.status: True})
         db.commit()
         db.refresh(user_db)
