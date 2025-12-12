@@ -7,26 +7,24 @@ import os
 load_dotenv()
 
 URL = os.getenv('DATABASE_URL')
-print(URL)
+print("DATABASE_URL: ", URL)
 
 if URL is None:
-    raise ValueError('Error connecting to the database')
+    raise ValueError('DATABASE_URL not found')
 
-connect_args = {}
+# Ruta del certificado CA
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ca_path = os.path.join(BASE_DIR, "certs", "ca.pem")
 
-if URL.startswith("mysql"):
-    ca_path = os.path.abspath("certs/ca.pem")
-    if os.path.exists(ca_path):
-        connect_args = {
-            "ssl": {
-                "ca": ca_path
-            }
-        }
-    else:
-        raise ValueError(f"CA file not found at: {ca_path}")
+if not os.path.exists(ca_path):
+    raise ValueError(f"CA file not found at: {ca_path}")
 
-elif URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
+# connect_args para PyMySQL
+connect_args = {
+    "ssl": {
+        "ca": ca_path
+    }
+}
 
 engine = create_engine(
     URL,
