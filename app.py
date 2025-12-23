@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","https://messagin-backend.onrender.com", "https://frontend-three-jet-33.vercel.app/"],  # 🌐 orígenes permitidos
+    allow_origins=["http://localhost:5173","https://messagin-backend.onrender.com", "https://messagin-frontend.vercel.app/"],  # 🌐 orígenes permitidos
     allow_credentials=True,                   # 🔑 necesario para cookies
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
