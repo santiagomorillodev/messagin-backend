@@ -7,10 +7,18 @@ from fastapi.middleware.cors import CORSMiddleware
 init_db()
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",                    
+    "http://localhost:3000",                    
+    "https://messagin-frontend.vercel.app",     
+    "https://messagin-frontend-git-main-santiagomorillodevs-projects.vercel.app",
+    "https://messagin-frontend-*.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","https://messagin-backend.onrender.com", "https://messagin-frontend.vercel.app/"],  # 🌐 orígenes permitidos
-    allow_credentials=True,                   # 🔑 necesario para cookies
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
