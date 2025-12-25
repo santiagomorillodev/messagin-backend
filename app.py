@@ -13,6 +13,7 @@ origins = [
     "https://messagin-frontend.vercel.app",     
     "https://messagin-frontend-git-main-santiagomorillodevs-projects.vercel.app",
     "https://messagin-frontend-*.vercel.app",
+    "https://messagin-frontend-git-fix-de-610fe7-santiagos-projects-05c64ab8.vercel.app"
 ]
 
 app.add_middleware(
