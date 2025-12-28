@@ -25,7 +25,7 @@ async def create_post(
             try:
                 result = None
                 if file.size != 0:
-                    result = cloudinary.uploader.upload(
+                    result = uploader.upload(
                         file.file,
                         resource_type="auto"  # auto-detecta tipo
                     )
