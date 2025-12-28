@@ -8,13 +8,12 @@ init_db()
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",                    # Vite dev server
-    "http://127.0.0.1:5173",                    # Localhost alternativo
-    "http://localhost:3000",                    # Create React App
-    "https://localhost:5173",                   # HTTPS local (raro pero posible)
-    "https://messagin-frontend.vercel.app",     # Tu dominio principal
+    "http://localhost:5173",                    
+    "http://127.0.0.1:5173",                    
+    "http://localhost:3000",                    
+    "https://localhost:5173",                   
+    "https://messagin-frontend.vercel.app",     
     "https://messagin-frontend-git-main-santiagomorillodevs-projects.vercel.app",
-    # Los wildcards con * no funcionan en FastAPI CORS, necesitas listarlos explícitamente
 ]
 
 app.add_middleware(
