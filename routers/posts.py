@@ -5,49 +5,74 @@ from models import PostModel, UserModel, FollowerModel, NotificationModel, LikeM
 from config import get_db
 from security import get_current_user
 from cloudinary import uploader, api
+from typing import Optional
 
 root = APIRouter(prefix='/post', tags=['Post'])
 
 @root.post('/create')
 async def create_post(
     content: str = Form(...),
-    file: UploadFile = File(None),
+    file: Optional[UploadFile] = File(None),  # Hacerlo Optional
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if content == None and file == None: return
     try:
         image_url = None
         public_id = None
-        print(file)
 
-        if file:
-            result = uploader.upload(file.file)
-            image_url = result.get('secure_url')
-            public_id = result.get('public_id')
+        if file and file.filename:  # Verificar que tenga nombre
+            try:
+                result = None
+                if file.size != 0:
+                    result = cloudinary.uploader.upload(
+                        file.file,
+                        resource_type="auto"  # auto-detecta tipo
+                    )
+                    image_url = result.get('secure_url')
+                    public_id = result.get('public_id')
+                                    
+            except Exception as upload_error:
+                print(f"❌ Error subiendo imagen a Cloudinary: {upload_error}")
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Error subiendo imagen: {str(upload_error)}"
+                )
 
+        # Crear el post (con o sin imagen)
         post = PostModel(
             id_user=current_user.id,
             content=content,
-            url=image_url,
-            public_id=public_id
+            url=image_url,      # Puede ser None
+            public_id=public_id # Puede ser None
         )
+        
         db.add(post)
         db.commit()
         db.refresh(post)
         
-        following_ids = db.query(FollowerModel.followed_id).filter(FollowerModel.follower_id == current_user.id).all()
-        for id in following_ids:
-            followed_id = id[0]
-            new_notification = NotificationModel(
-                user_id = followed_id,
-                other_user_id = current_user.id,
-                content = 'ha subido un nuevo post!'
-            )
-            if new_notification:
+        # Crear notificaciones para seguidores
+        try:
+            following_ids = db.query(FollowerModel.followed_id).filter(
+                FollowerModel.follower_id == current_user.id
+            ).all()
+            
+            for id_tuple in following_ids:
+                followed_id = id_tuple[0]
+                new_notification = NotificationModel(
+                    user_id=followed_id,
+                    other_user_id=current_user.id,
+                    content='ha subido un nuevo post!'
+                )
                 db.add(new_notification)
-                db.commit()
-
-        
+            
+            db.commit()
+            
+        except Exception as notification_error:
+            print(f"⚠️ Error creando notificaciones: {notification_error}")
+            # No fallar el post principal si las notificaciones fallan
+            db.rollback()  # Rollback de las notificaciones fallidas
+            # Pero mantener el commit del post
 
         return {
             "id": post.id,
@@ -57,9 +82,14 @@ async def create_post(
             "created": post.created
         }
 
+    except HTTPException:
+        # Re-lanzar excepciones HTTP
+        raise
     except Exception as e:
-        print("⚠️ Error subiendo post:", e)
-        raise HTTPException(status_code=500, detail="Error creating post")
+        print(f"⚠️ Error crítico creando post: {e}")
+        # Rollback en caso de error
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error creando post: {str(e)}")
 
 @root.get('/{id}')
 def get_posts_current_user(id: int, db: Session = Depends(get_db)):
