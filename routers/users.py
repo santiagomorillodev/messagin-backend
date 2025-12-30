@@ -72,7 +72,7 @@ def login(data:OAuth2PasswordRequestForm = Depends(), db:Session = Depends(get_d
         db.query(UserModel).filter(UserModel.id == user_db.id).update({UserModel.status: True})
         db.commit()
         db.refresh(user_db)
-        print(user_db.status)
+        print(response)
         return response
     
     except ValueError as error:
@@ -148,6 +148,7 @@ def get_username(username: str, current_user: UserModel = Depends(get_current_us
         
 @root.get("/me", response_model=UserReadMe)
 def current_user(user: UserModel = Depends(get_current_user)):
+    print(f'estos son los datos del usuario: {user}')
     return user
 
 @root.delete("/delete/account")
